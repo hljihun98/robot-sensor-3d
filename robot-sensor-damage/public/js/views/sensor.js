@@ -48,7 +48,8 @@ export async function sensorView(main, { params, query }) {
   const unwrapHost = h('div', { class: 'unwrap-wrap hidden' });
   const hint = h('div', { class: 'viewer-hint hidden' });
   const viewBtns = h('div', { class: 'view-buttons' },
-    [['front', '정면'], ['side', '측면'], ['top', '상단'], ['back', '후면'], ['reset', '처음']].map(([k, l]) => h('button', { onclick: () => viewer.setView(k) }, l)));
+    [['front', '정면', '정면 0°'], ['left', '좌측면', '정면 기준 왼쪽 · 270°'], ['right', '우측면', '정면 기준 오른쪽 · 90°'], ['back', '후면', '후면 180°'],
+      ['top', '상단'], ['reset', '처음']].map(([k, l, title]) => h('button', { onclick: () => viewer.setView(k), title }, l)));
   const tabs = h('div', { class: 'tabs', role: 'tablist' });
   const tabBtn = (k, label) => h('button', { role: 'tab', class: st.tab === k ? 'active' : '', onclick: () => setTab(k) }, label);
   tabs.append(tabBtn('3d', '3D 보기'));

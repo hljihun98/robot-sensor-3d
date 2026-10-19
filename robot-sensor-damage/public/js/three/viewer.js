@@ -142,8 +142,9 @@ export class SensorViewer {
   }
 
   setView(name, animate = true) {
+    // 센서가 정면(+Z)을 볼 때 기준 — 우측면 = 시계 방향 90°(−X), 좌측면 = 270°(+X)
     const dirs = {
-      front: [0, 0.18, 1], back: [0, 0.18, -1], side: [1, 0.18, 0], top: [0, 1, 0.0001], reset: [0.62, 0.45, 1],
+      front: [0, 0.18, 1], back: [0, 0.18, -1], left: [1, 0.18, 0], right: [-1, 0.18, 0], top: [0, 1, 0.0001], reset: [0.62, 0.45, 1],
     };
     const d = V(dirs[name] ?? dirs.reset).normalize();
     const pos = this.center.clone().add(d.multiplyScalar(this.radius * 3.4));
