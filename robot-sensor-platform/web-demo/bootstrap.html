@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>센서로그 웹 데모</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231b6b55'/%3E%3Cpath d='M16 22h32v24H16zM24 22v-8m16 8v-8' fill='none' stroke='white' stroke-width='4'/%3E%3C/svg%3E">
+  <style>
+    :root { --bg: #f2f5f3; --surface: #fff; --ink: #17241f; --ink-2: #4b5a54; --line: #dfe6e2; --accent: #1b6b55; --bad: #b42318; --bad-soft: #fde8e6; }
+    @media (prefers-color-scheme: dark) { :root { --bg: #0f1513; --surface: #17201c; --ink: #e5ece8; --ink-2: #a9b8b1; --line: #26332e; --accent: #4cc39b; --bad: #ff8a80; --bad-soft: #3d1715; } }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px; background: var(--bg); color: var(--ink);
+      font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; word-break: keep-all; }
+    main { width: min(440px, 100%); background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 28px; }
+    .mark { width: 44px; height: 44px; border-radius: 12px; background: var(--accent); display: grid; place-items: center; margin-bottom: 14px; }
+    .mark svg { width: 26px; height: 26px; fill: none; stroke: #fff; stroke-width: 2.4; }
+    h1 { margin: 0 0 6px; font-size: 21px; }
+    p { margin: 0 0 12px; color: var(--ink-2); }
+    ol { margin: 6px 0 16px; padding-left: 20px; color: var(--ink-2); font-size: 14px; }
+    li.now { color: var(--ink); font-weight: 600; }
+    li.done { color: var(--accent); }
+    li.done::marker { content: "✓  "; }
+    .bar { height: 6px; border-radius: 999px; background: var(--line); overflow: hidden; margin: 4px 0 16px; }
+    .bar span { display: block; width: 35%; height: 100%; background: var(--accent); border-radius: inherit; animation: slide 1.3s ease-in-out infinite; }
+    @keyframes slide { from { transform: translateX(-100%); } to { transform: translateX(290%); } }
+    @media (prefers-reduced-motion: reduce) { .bar span { animation: none; width: 100%; opacity: .5; } }
+    .error { background: var(--bad-soft); color: var(--ink); border-radius: 10px; padding: 12px; font-size: 14px; }
+    .error b { color: var(--bad); }
+    .small { font-size: 13px; }
+    a { color: var(--accent); }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 8h12v9H6zM9 8V5m6 3V5"/></svg></div>
+    <h1>센서로그 웹 데모</h1>
+    <p>설치 없이 이 브라우저 안에서 센서로그 서버를 실행합니다.</p>
+    <ol id="steps" aria-live="polite">
+      <li data-step="sw">실행 환경 준비</li>
+      <li data-step="data">예시 데이터 준비 (처음 한 번, 몇 초)</li>
+      <li data-step="open">화면 열기</li>
+    </ol>
+    <div class="bar" id="bar"><span></span></div>
+    <div id="error" class="error" role="alert" hidden></div>
+    <p class="small">데이터는 이 브라우저에만 저장되며, 다른 사람과 공유되지 않습니다.</p>
+    <p class="small"><a id="home" href="../">홈페이지로 돌아가기</a></p>
+  </main>
+  <script>
+    (async () => {
+      const here = location.pathname.replace(/index\.html$/, '');
+      const to = new URLSearchParams(location.search).get('to');
+      const target = to && to.startsWith(here) ? to : here;
+      const step = (name) => {
+        let passed = true;
+        document.querySelectorAll('#steps li').forEach((li) => {
+          if (li.dataset.step === name) passed = false;
+          li.className = li.dataset.step === name ? 'now' : passed ? 'done' : '';
+        });
+      };
+      const fail = (msg) => {
+        document.getElementById('bar').hidden = true;
+        const box = document.getElementById('error');
+        box.hidden = false;
+        box.innerHTML = '<b>웹 데모를 시작하지 못했습니다.</b><br>';
+        box.append(msg);
+      };
+      if (!('serviceWorker' in navigator)) {
+        fail('이 브라우저(또는 시크릿·사생활 보호 창)에서는 웹 데모에 필요한 기능을 쓸 수 없습니다. 일반 창의 최신 Chrome·Edge·Safari로 열거나, 홈페이지의 "내 PC에서 실행하기"를 이용하세요.');
+        return;
+      }
+      try {
+        step('sw');
+        await navigator.serviceWorker.register('sw.js', { scope: './' });
+        await navigator.serviceWorker.ready;
+        if (!navigator.serviceWorker.controller) {
+          await new Promise((resolve) => {
+            navigator.serviceWorker.addEventListener('controllerchange', resolve, { once: true });
+            setTimeout(resolve, 4000);
+          });
+        }
+        if (!navigator.serviceWorker.controller) {
+          // 강력 새로고침(Shift+새로고침)으로 열리면 한 번 더 일반 새로고침해야 연결된다
+          if (sessionStorage.getItem('sensorlog-demo-reload')) throw new Error('실행 환경에 연결하지 못했습니다. 페이지를 새로고침해 주세요.');
+          sessionStorage.setItem('sensorlog-demo-reload', '1');
+          location.reload();
+          return;
+        }
+        sessionStorage.removeItem('sensorlog-demo-reload');
+        step('data');
+        const res = await fetch('__demo/ready', { cache: 'no-store' });
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(body.error || `응답 ${res.status}`);
+        step('open');
+        location.replace(target);
+      } catch (e) {
+        fail(`${e.message} 시크릿·사생활 보호 창에서는 동작하지 않을 수 있습니다.`);
+      }
+    })();
+  </script>
+</body>
+</html>

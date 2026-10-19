@@ -8,14 +8,25 @@
 | [`robot-sensor-platform/`](robot-sensor-platform/) | 센서로그 | 서버 저장형, 사진별 공개 권한·CSRF 토큰, QR·CSV 일괄 등록 | Node.js 24+ |
 | [`launcher/`](launcher/) | 실행 관리 홈페이지 | 두 프로그램 실행·중지, 로그·초기 계정 보기, 첫 실행 때 자동 설치 | Node.js 22.13+ |
 
-## 온라인으로 보기
+## 실행 방법 두 가지
+
+| 방법 | 필요한 것 | 데이터 | 용도 |
+| --- | --- | --- | --- |
+| ① 웹에서 바로 실행 | 링크만 열기 | 그 브라우저에만 저장 | 화면·흐름 확인, 소개 |
+| ② 내려받아 실행 | Node.js, ZIP 또는 git | PC의 `data/` 폴더 | 실제 운영, 시범 운영 |
+
+### ① 웹에서 바로 실행
 
 - 홈페이지: https://hljihun98.github.io/robot-sensor-3d/
-- damage 데모: https://hljihun98.github.io/robot-sensor-3d/damage/ (데이터는 보는 사람 브라우저에만 저장)
-  - 데모 계정 `field / field1234`(현장), `admin / admin1234`(관리자), `sysadmin / sys1234`(시스템 관리자)
-- platform은 서버가 필요해서 온라인 데모가 없습니다. 아래처럼 내 PC에서 실행하세요.
+- 센서 파손 3D 이력관리 데모: https://hljihun98.github.io/robot-sensor-3d/damage/
+- 센서로그 웹 데모: https://hljihun98.github.io/robot-sensor-3d/platform/
+- 두 데모 모두 계정이 같습니다: `field / field1234`(현장), `admin / admin1234`(관리자), `sysadmin / sys1234`(시스템 관리자)
 
-## 내 PC에서 실행하기
+센서로그 웹 데모는 실제 서버 코드(`robot-sensor-platform/server/`)를 브라우저의 서비스 워커 안에서 그대로 실행합니다. SQLite는 sql.js(WebAssembly)로, 사진 처리(sharp)는 브라우저 캔버스로 바꿔 끼웠습니다. 데이터는 그 브라우저의 IndexedDB에만 남고 화면 위쪽 **데모 초기화**로 지울 수 있습니다. 시크릿·사생활 보호 창에서는 동작하지 않을 수 있습니다. 자세한 구조는 [`robot-sensor-platform/web-demo/`](robot-sensor-platform/web-demo/)를 보세요.
+
+### ② 내려받아 실행
+
+git 없이 [ZIP 파일](https://github.com/hljihun98/robot-sensor-3d/archive/refs/heads/main.zip)을 받아 압축을 풀어도 됩니다.
 
 ```bash
 git clone https://github.com/hljihun98/robot-sensor-3d.git
@@ -43,4 +54,4 @@ npm start            # Windows는 START.cmd 더블클릭, macOS·Linux는 ./star
 npm test             # 두 프로그램 테스트를 차례로 실행 (각 폴더에서 npm ci 먼저)
 ```
 
-GitHub에 올리면 `.github/workflows/ci.yml`이 두 프로그램 테스트와 런처 확인을, `pages.yml`이 홈페이지·damage 데모 배포를 합니다.
+GitHub에 올리면 `.github/workflows/ci.yml`이 두 프로그램 테스트·센서로그 웹 데모 빌드·런처 확인을, `pages.yml`이 홈페이지와 두 웹 데모 배포를 합니다.

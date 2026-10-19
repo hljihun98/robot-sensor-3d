@@ -27,6 +27,9 @@ jobs:
           cache-dependency-path: ${{ matrix.app }}/package-lock.json
       - run: npm ci
       - run: npm test
+      - name: 웹 데모 빌드 확인
+        if: matrix.app == 'robot-sensor-platform'
+        run: npm run build:web -- "$RUNNER_TEMP/web-demo"
   launcher:
     name: 실행 관리 홈페이지
     runs-on: ubuntu-latest

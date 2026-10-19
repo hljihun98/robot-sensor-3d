@@ -39,7 +39,7 @@
 
     <section id="howto" class="panel howto" aria-labelledby="howto-title">
       <div class="panel-head">
-        <h2 id="howto-title">내 PC에서 실행하기</h2>
+        <h2 id="howto-title">내려받아 내 PC에서 실행하기</h2>
         <div class="tabs" role="tablist" aria-label="운영체제">
           <button type="button" role="tab" id="tab-win" aria-controls="os-win" aria-selected="true">Windows</button>
           <button type="button" role="tab" id="tab-unix" aria-controls="os-unix" aria-selected="false" tabindex="-1">macOS · Linux</button>
@@ -96,7 +96,7 @@ cd robot-sensor-3d</code></pre><button type="button" class="copy" data-copy="git
           <tbody>
             <tr><th scope="row">추천 용도</th><td>화면·흐름 확인, 데모 공유, 3D 위치 확인이 중요할 때</td><td>사진 공개 권한·보안이 중요한 시범 운영</td></tr>
             <tr><th scope="row">구조</th><td>업무 로직 하나를 브라우저·서버가 함께 씀</td><td>로직은 서버에, 화면은 파일 하나</td></tr>
-            <tr><th scope="row">서버 없이</th><td>데모 모드로 동작 (브라우저에 저장)</td><td>서버 필요</td></tr>
+            <tr><th scope="row">웹에서 바로</th><td>화면 코드에 들어 있는 데모 모드 (브라우저에 저장)</td><td>실제 서버 코드를 브라우저 안에서 실행 (브라우저에 저장)</td></tr>
             <tr><th scope="row">3D</th><td>곡면에 붙인 표시, 360° 펼쳐보기</td><td>점·선·원·영역 표시, GLB 모델 교체 화면</td></tr>
             <tr><th scope="row">사진</th><td>휴대폰에서 줄여 올림, 1장 이상</td><td>서버에서 변환, 2~5장 필수, 사진별 공개 권한</td></tr>
             <tr><th scope="row">보안</th><td>출처 검사, 비밀번호 6자 이상</td><td>CSRF 토큰, 비밀번호 12자 이상</td></tr>
@@ -109,6 +109,11 @@ cd robot-sensor-3d</code></pre><button type="button" class="copy" data-copy="git
 
     <section class="panel faq" aria-labelledby="faq-title">
       <h2 id="faq-title">자주 묻는 질문</h2>
+      <details>
+        <summary>웹에서 바로 실행하는 것과 내려받아 실행하는 것은 무엇이 다른가요?</summary>
+        <p><b>웹에서 바로 실행</b>은 설치 없이 링크만 열면 됩니다. 기능은 같지만 데이터가 그 브라우저에만 저장되어 다른 사람·다른 기기와 공유되지 않습니다. 화면과 흐름을 확인하거나 소개할 때 쓰세요.</p>
+        <p><b>내려받아 실행</b>은 내 PC(또는 서버)에서 실제 프로그램을 켭니다. 데이터는 PC의 <code>data/</code> 폴더에 남고, 서버로 운영하면 여러 사람이 같은 기록을 씁니다. 실제 현장 사진·기록은 이 방법으로 다루세요.</p>
+      </details>
       <details>
         <summary>실행을 눌렀는데 오래 걸려요.</summary>
         <p>처음 실행할 때만 필요한 패키지를 인터넷에서 받습니다. 카드에 진행률이 나오며 인터넷 속도에 따라 몇 분 걸릴 수 있습니다. 두 번째부터는 몇 초 안에 켜집니다.</p>
@@ -128,7 +133,7 @@ cd robot-sensor-3d</code></pre><button type="button" class="copy" data-copy="git
       </details>
       <details>
         <summary>데모 데이터를 처음 상태로 되돌리고 싶어요.</summary>
-        <p>데모 화면 맨 위의 <b>데모 초기화</b>를 누르세요. 데이터는 그 브라우저에만 있어서 다른 사람에게는 영향이 없습니다.</p>
+        <p>두 웹 데모 모두 화면 위쪽 안내 띠의 <b>데모 초기화</b>를 누르세요. 데이터는 그 브라우저에만 있어서 다른 사람에게는 영향이 없습니다.</p>
       </details>
       <details>
         <summary>"Node.js 24 이상이 필요합니다"라고 나와요.</summary>

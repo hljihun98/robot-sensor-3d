@@ -2,6 +2,10 @@
 
 첨부된 「로봇 센서 파손 3D 이력관리 플랫폼 기획안」을 기반으로 만든 **서버 저장형 1차 구현**입니다. 브라우저에서 신고하면 서버의 SQLite와 사진 폴더에 저장됩니다. localStorage 데모가 아니며, 실행 중 외부 클라우드·CDN·API가 필요하지 않습니다.
 
+## 웹에서 바로 써 보기
+
+설치 없이 https://hljihun98.github.io/robot-sensor-3d/platform/ 을 열면 이 서버 코드를 브라우저 안에서 그대로 실행하는 웹 데모가 뜹니다. 데이터는 그 브라우저에만 저장되므로 실제 운영은 아래처럼 PC·서버에서 실행하세요. 구조는 [`web-demo/README.md`](web-demo/README.md)에 있습니다.
+
 ## Windows에서 바로 실행
 
 1. 이 폴더의 **`START.cmd`를 더블클릭**합니다. Node.js 24 이상이 필요합니다.

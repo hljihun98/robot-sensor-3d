@@ -4,6 +4,8 @@
 const REPO = 'https://github.com/hljihun98/robot-sensor-3d';
 const PAGES = 'https://hljihun98.github.io/robot-sensor-3d/';
 const LAUNCHER = 'http://127.0.0.1:8080/';
+const ZIP = `${REPO}/archive/refs/heads/main.zip`;
+const DEMO_ACCOUNTS = '데모 계정  field / field1234 · admin / admin1234 · sysadmin / sys1234';
 const POLL_MS = 1500;
 const BASE_TITLE = document.title;
 
@@ -26,8 +28,9 @@ const CATALOG = [
     icon: 'dome',
     desc: '업무 로직 하나를 브라우저와 서버가 함께 씁니다. 서버 없이도 데모 모드로 바로 열리고, 라이다 창을 360°로 펼쳐 볼 수 있습니다.',
     chips: ['360° 펼쳐보기', '날짜 기준 보기', '데모 모드', 'Node 22.13+'],
+    short: '센서 파손 3D',
     demo: 'damage/',
-    onlineNote: '설치 없이 바로 열립니다. 데이터는 보는 사람의 브라우저에만 저장됩니다.\n데모 계정  field / field1234 · admin / admin1234 · sysadmin / sys1234',
+    webNote: '설치 없이 이 브라우저에서 바로 열립니다. 데이터는 이 브라우저에만 저장됩니다.',
     accountTitle: '첫 로그인 계정',
     accountHint: '이 비밀번호는 처음 실행할 때 한 번만 나옵니다. 로그인하면 새 비밀번호로 바꾸게 됩니다.',
     modeHint: {
@@ -45,8 +48,9 @@ const CATALOG = [
     icon: 'camera',
     desc: '서버 저장형입니다. 사진을 서버에서 변환하고 사진마다 공개 권한을 검사합니다. 호기 QR 코드와 CSV 시리얼 일괄 등록을 지원합니다.',
     chips: ['QR 코드', 'CSV 일괄 등록', '사진별 권한', 'Node 24+'],
-    demo: null,
-    onlineNote: '서버(Node.js·SQLite)가 꼭 필요해서 온라인 데모가 없습니다. 내 PC에서 실행하세요. 설치는 런처가 자동으로 합니다.',
+    short: '센서로그',
+    demo: 'platform/',
+    webNote: '센서로그 서버를 이 브라우저 안에서 그대로 실행합니다. 데이터는 이 브라우저에만 저장됩니다.',
     accountTitle: '첫 로그인 계정',
     accountHint: '로그인하면 12자 이상 새 비밀번호로 바꾸게 됩니다. 바꾼 뒤에는 data/initial-account.txt 파일을 지우세요.',
     modeHint: { server: '데이터는 data/ 폴더에 저장' },
@@ -222,16 +226,20 @@ function renderOnline() {
   $('#conn').className = 'conn online';
   const sw = $('#switch-link');
   Object.assign(sw, { href: LAUNCHER, textContent: '내 PC 런처 열기', title: '런처(START.cmd)를 켠 뒤에 누르세요', hidden: false });
+  setText($('#hero-text'), '같은 기획안으로 만든 두 프로그램입니다. 둘 다 설치 없이 웹에서 바로 실행하거나, 내려받아 내 PC에서 실제 운영처럼 쓸 수 있습니다.');
   $('#hero-actions').replaceChildren(
-    h('a', { class: 'btn primary big', href: 'damage/', icon: 'play' }, '데모 바로 실행'),
-    h('a', { class: 'btn big', href: '#howto', icon: 'down' }, '내 PC에서 실행하기'));
+    ...CATALOG.map((m) => h('a', { class: 'btn primary big', href: m.demo, icon: 'play' }, `${m.short} 데모`)),
+    h('a', { class: 'btn big', href: '#howto', icon: 'down' }, '내려받아 실행하기'));
+  const way = (n, title, text, ...actions) => h('div', { class: 'way' },
+    h('h3', {}, h('span', { class: 'way-n', 'aria-hidden': 'true' }, n), title), h('p', {}, text), h('div', { class: 'actions' }, ...actions));
   $('#apps').replaceChildren(...CATALOG.map((meta) => card(meta,
     h('div', { class: 'control' },
-      h('div', { class: meta.demo ? 'note' : 'note warn' }, meta.onlineNote),
-      h('div', { class: 'actions' },
-        meta.demo ? h('a', { class: 'btn primary', href: meta.demo, icon: 'play' }, '데모 바로 실행')
-          : h('a', { class: 'btn primary', href: '#howto', icon: 'down' }, '실행 방법 보기'),
-        h('a', { class: 'btn', href: `${REPO}/tree/main/${meta.folder}`, icon: 'code' }, '코드 보기'))))));
+      h('div', { class: 'ways' },
+        way('1', '웹에서 바로 실행', meta.webNote, h('a', { class: 'btn primary', href: meta.demo, icon: 'play' }, '데모 바로 실행')),
+        way('2', '내려받아 실행', '내 PC에서 실제 운영처럼 씁니다. 데이터는 PC의 data/ 폴더에 저장됩니다.',
+          h('a', { class: 'btn', href: ZIP, icon: 'down' }, 'ZIP 내려받기'), h('a', { class: 'btn ghost', href: '#howto' }, '실행 방법'))),
+      h('div', { class: 'note' }, DEMO_ACCOUNTS),
+      h('a', { class: 'small', href: `${REPO}/tree/main/${meta.folder}` }, '코드 보기 →')))));
 }
 
 // ── 로컬 모드(런처 연결) ─────────────

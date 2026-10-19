@@ -155,6 +155,11 @@ h1, h2, h3 { line-height: 1.35; }
 
 .control { border-top: 1px solid var(--line); padding-top: 14px; display: flex; flex-direction: column; gap: 12px; }
 .mode-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.ways { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 10px; }
+.way { border: 1px solid var(--line); border-radius: 12px; padding: 14px; background: var(--surface-2); display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.way h3 { margin: 0; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+.way-n { flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-size: 12.5px; }
+.way p { margin: 0; font-size: 13.5px; flex: 1; }
 .modes { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; padding: 3px; background: var(--surface-2); gap: 3px; }
 .modes button { border: 0; background: transparent; color: var(--ink-2); padding: 6px 12px; border-radius: 7px; font: inherit; font-size: 13.5px; cursor: pointer; }
 .modes button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--line); font-weight: 600; }

@@ -4,3 +4,4 @@ backups/
 .env
 test-results/
 playwright-report/
+web-demo/dist/
