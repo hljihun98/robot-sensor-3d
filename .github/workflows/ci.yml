@@ -1,0 +1,43 @@
+# 올릴 때마다 두 프로그램의 테스트를 돌립니다.
+name: 테스트
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    name: ${{ matrix.app }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: robot-sensor-damage
+            node: 22
+          - app: robot-sensor-platform
+            node: 24
+    defaults:
+      run:
+        working-directory: ${{ matrix.app }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: ${{ matrix.app }}/package-lock.json
+      - run: npm ci
+      - run: npm test
+  launcher:
+    name: 실행 관리 홈페이지
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: 런처가 뜨고 API가 응답하는지 확인
+        run: |
+          node launcher/server.js &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:8080/api/apps > /tmp/apps.json && break; sleep 0.5; done
+          node -e "const a=require('/tmp/apps.json').apps.map(x=>x.id).join(','); if(a!=='damage,platform') throw new Error(a); console.log('ok', a)"
+          curl -fsS http://127.0.0.1:8080/ | grep -q '센서 3D 이력관리'

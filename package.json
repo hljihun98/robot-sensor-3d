@@ -1,0 +1,14 @@
+{
+  "name": "robot-sensor-3d",
+  "version": "0.1.0",
+  "private": true,
+  "description": "로봇 센서 파손 3D 이력관리 — 두 가지 구현과 실행 관리 홈페이지",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node launcher/server.js --open",
+    "test": "npm --prefix robot-sensor-damage test && npm --prefix robot-sensor-platform test"
+  }
+}

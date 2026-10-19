@@ -1,0 +1,12 @@
+# docker compose up -d  → http://서버주소:3000
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      TRUST_PROXY: "0"
+      # INIT_ADMIN_PASSWORD: "처음 비밀번호"
+    volumes:
+      - ./data:/data

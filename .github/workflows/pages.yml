@@ -1,0 +1,36 @@
+# main에 올리면 실행 관리 홈페이지와 robot-sensor-damage 데모를 GitHub Pages로 배포합니다.
+#   https://<계정>.github.io/robot-sensor-3d/         → 홈페이지(온라인 모드)
+#   https://<계정>.github.io/robot-sensor-3d/damage/  → damage 데모(서버 없이 브라우저에 저장)
+# robot-sensor-platform은 서버가 필요해서 Pages에 올리지 않습니다.
+name: 홈페이지 배포
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: 사이트 파일 모으기
+        run: |
+          mkdir -p _site/damage
+          cp -r launcher/public/. _site/
+          cp -r robot-sensor-damage/public/. _site/damage/
+          touch _site/.nojekyll
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

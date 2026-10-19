@@ -1,0 +1,19 @@
+services:
+  sensorlog:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3210:3210"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3210
+      # Set to true behind the HTTPS reverse proxy.
+      COOKIE_SECURE: "false"
+      TRUST_PROXY: "1"
+      PUBLIC_URL: "http://localhost:3210"
+    volumes:
+      - sensorlog-data:/app/data
+      - sensorlog-backups:/app/backups
+volumes:
+  sensorlog-data:
+  sensorlog-backups:

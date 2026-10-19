@@ -1,0 +1,22 @@
+{
+  "name": "robot-sensor-damage",
+  "version": "0.1.0",
+  "private": true,
+  "description": "로봇 센서 파손 3D 이력관리 플랫폼",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server/app.js",
+    "seed": "node --disable-warning=ExperimentalWarning server/seed.js",
+    "seed:demo": "node --disable-warning=ExperimentalWarning server/seed.js --samples",
+    "dev:static": "node server/static-preview.js",
+    "test": "node --test test/*.test.js",
+    "backup": "node --disable-warning=ExperimentalWarning server/backup.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.21.2"
+  }
+}
