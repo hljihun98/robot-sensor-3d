@@ -55,3 +55,12 @@ npm test             # 두 프로그램 테스트를 차례로 실행 (각 폴�
 ```
 
 GitHub에 올리면 `.github/workflows/ci.yml`이 두 프로그램 테스트·센서로그 웹 데모 빌드·런처 확인을, `pages.yml`이 홈페이지와 두 웹 데모 배포를 합니다.
+
+## 개발 기록
+
+개발 방향·다음 할 일·완료 기록·결정 기록을 앱마다 남깁니다. 고치기 전에 읽고, 고친 뒤에는 같은 커밋에서 함께 고칩니다.
+
+- 공통: [`개발기록.md`](개발기록.md) · 작업 규칙: [`CLAUDE.md`](CLAUDE.md)
+- [`robot-sensor-damage/개발기록.md`](robot-sensor-damage/개발기록.md)
+- [`robot-sensor-platform/개발기록.md`](robot-sensor-platform/개발기록.md)
+- [`launcher/개발기록.md`](launcher/개발기록.md)
