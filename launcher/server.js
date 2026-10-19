@@ -22,10 +22,10 @@ const APPS = {
       server: { label: '서버 모드', port: 3000, args: ['--disable-warning=ExperimentalWarning', 'server/app.js'], install: true, node: '22.13' },
       demo: { label: '데모 모드', port: 5173, args: ['server/static-preview.js'], install: false, node: '18.0' },
     },
-    // 첫 실행 때 화면에 찍는 시스템 관리자 임시 비밀번호를 알림으로 보여 준다
-    notice: (line) => {
+    // 첫 실행 때 화면에 찍는 시스템 관리자 임시 비밀번호를 계정 안내로 보여 준다(이번 런처 실행 동안만 기억)
+    account: (line) => {
       const m = /아이디:\s*(\S+)\s+임시 비밀번호:\s*(\S+)/.exec(line);
-      return m ? `첫 로그인 계정  ${m[1]} / ${m[2]}  (로그인 후 비밀번호를 바꾸세요)` : null;
+      return m ? { id: m[1], password: m[2] } : null;
     },
   },
   platform: {
@@ -34,29 +34,47 @@ const APPS = {
       server: { label: '서버 모드', port: 3210, args: ['server/app.js'], install: true, node: '24.0' },
     },
     // 첫 실행 때 data/initial-account.txt 에 초기 계정을 남긴다
-    noticeFile: path.join('data', 'initial-account.txt'),
+    accountFile: path.join('data', 'initial-account.txt'),
   },
 };
 
 const state = Object.fromEntries(Object.keys(APPS).map((id) => [id, {
-  status: 'stopped', mode: null, child: null, startedAt: null, error: null, notice: null, stopping: false, logs: [], seq: 0,
+  status: 'stopped', phaseAt: Date.now(), mode: null, child: null, startedAt: null, error: null, account: null, progress: null,
+  stopping: false, logs: [], seq: 0,
 }]));
+const setStatus = (id, status) => Object.assign(state[id], { status, phaseAt: Date.now() });
 
 const ANSI = /\x1b\[[0-9;]*[A-Za-z]/g;
+const NPM_PACKAGE = /^npm http (?:fetch GET \d+|cache) \S+\.tgz/; // 패키지 하나를 받을 때마다 한 줄
 function log(id, text, kind = 'out') {
   const s = state[id];
   String(text).replace(ANSI, '').split(/\r?\n/).forEach((line) => {
     if (!line.trim()) return;
+    if (s.progress && NPM_PACKAGE.test(line)) {
+      s.progress.done += 1;
+      return;
+    }
     s.seq += 1;
     s.logs.push({ seq: s.seq, at: new Date().toISOString(), kind, line });
-    const n = APPS[id].notice?.(line);
-    if (n) s.notice = n;
+    const a = APPS[id].account?.(line);
+    if (a) s.account = a;
   });
   if (s.logs.length > MAX_LOG) s.logs.splice(0, s.logs.length - MAX_LOG);
 }
 function pipe(id, child) {
   child.stdout?.on('data', (b) => log(id, b.toString('utf8')));
   child.stderr?.on('data', (b) => log(id, b.toString('utf8'), 'err'));
+}
+
+// 설치할 패키지 수(이 PC의 OS·CPU용이 아닌 선택 패키지는 뺀다) — 설치 진행률 계산용
+function packageCount(id) {
+  try {
+    const lock = JSON.parse(fs.readFileSync(path.join(root, APPS[id].dir, 'package-lock.json'), 'utf8'));
+    return Object.entries(lock.packages ?? {}).filter(([k, p]) => k && !p.dev && !p.link
+      && (!p.os || p.os.includes(process.platform)) && (!p.cpu || p.cpu.includes(process.arch))).length;
+  } catch {
+    return 0;
+  }
 }
 
 const nodeOk = (min) => {
@@ -97,14 +115,16 @@ function killTree(child) {
 function runInstall(id) {
   return new Promise((resolve) => {
     const s = state[id];
-    log(id, '필요한 패키지를 설치합니다 (npm ci, 처음 한 번 · 인터넷 필요)…', 'sys');
-    // Windows의 npm은 npm.cmd 라서 셸로 실행한다(고정된 명령 문자열만 쓴다)
-    const child = spawn('npm ci --omit=dev --no-audit --no-fund', { cwd: path.join(root, APPS[id].dir), shell: true, windowsHide: true });
+    s.progress = { done: 0, total: packageCount(id) };
+    log(id, `필요한 패키지 ${s.progress.total || ''}개를 설치합니다 (npm ci, 처음 한 번 · 인터넷 필요)…`, 'sys');
+    // Windows의 npm은 npm.cmd 라서 셸로 실행한다(고정된 명령 문자열만 쓴다). http 로그로 진행률을 센다.
+    const child = spawn('npm ci --omit=dev --no-audit --no-fund --loglevel=http', { cwd: path.join(root, APPS[id].dir), shell: true, windowsHide: true });
     s.child = child;
     pipe(id, child);
     child.once('error', (e) => log(id, `설치를 시작하지 못했습니다: ${e.message}`, 'err'));
     child.once('close', (code) => {
       s.child = null;
+      s.progress = null;
       resolve(code === 0);
     });
   });
@@ -122,12 +142,12 @@ async function start(id, modeId) {
   Object.assign(s, { mode: modeId, error: null, stopping: false, startedAt: null });
   (async () => {
     if (mode.install && !installed(id)) {
-      s.status = 'installing';
+      setStatus(id, 'installing');
       const ok = await runInstall(id);
       if (s.stopping) return finish(id, null);
-      if (!ok) return finish(id, '패키지 설치에 실패했습니다. 로그를 확인하세요.');
+      if (!ok) return finish(id, '패키지 설치에 실패했습니다. 인터넷 연결을 확인하고 다시 실행하세요. 자세한 내용은 실행 로그에 있습니다.');
     }
-    s.status = 'starting';
+    setStatus(id, 'starting');
     log(id, `${mode.label}로 시작합니다 → http://${HOST}:${mode.port}`, 'sys');
     const child = spawn(process.execPath, mode.args, {
       cwd: path.join(root, app.dir), windowsHide: true,
@@ -142,7 +162,7 @@ async function start(id, modeId) {
       finish(id, s.stopping || code === 0 ? null : `프로그램이 멈췄습니다 (종료 코드 ${code}). 로그를 확인하세요.`);
     });
     if (await waitForPort(mode.port, 60000, () => s.child === child)) {
-      s.status = 'running';
+      setStatus(id, 'running');
       s.startedAt = new Date().toISOString();
       log(id, '실행 중입니다.', 'sys');
     } else if (s.child === child) {
@@ -156,7 +176,7 @@ async function start(id, modeId) {
 
 function finish(id, error) {
   const s = state[id];
-  s.status = error ? 'error' : 'stopped';
+  setStatus(id, error ? 'error' : 'stopped');
   s.error = error ?? s.error;
   s.startedAt = null;
   s.stopping = false;
@@ -171,12 +191,14 @@ function stop(id) {
   killTree(s.child);
 }
 
-function readNotice(id) {
-  const s = state[id];
-  const file = APPS[id].noticeFile;
-  if (!file) return s.notice;
+function readAccount(id) {
+  const file = APPS[id].accountFile;
+  if (!file) return state[id].account;
   try {
-    return fs.readFileSync(path.join(root, APPS[id].dir, file), 'utf8').trim();
+    const text = fs.readFileSync(path.join(root, APPS[id].dir, file), 'utf8');
+    const user = /계정:\s*(\S+)/.exec(text)?.[1];
+    const password = /비밀번호:\s*(\S+)/.exec(text)?.[1];
+    return user && password ? { id: user, password, file: `${APPS[id].dir}/${file.split(path.sep).join('/')}` } : null;
   } catch {
     return null;
   }
@@ -191,10 +213,11 @@ async function snapshot() {
       modes.push({ id: mid, label: m.label, port: m.port, url: `http://${HOST}:${m.port}/`, node: m.node, nodeOk: nodeOk(m.node),
         install: m.install, inUse: s.mode === mid && s.child ? true : await portInUse(m.port) });
     }
-    apps.push({ id, dir: app.dir, status: s.status, mode: s.mode, startedAt: s.startedAt, error: s.error,
-      notice: readNotice(id), installed: installed(id), dataDir: path.join(root, app.dir, 'data'), lastSeq: s.seq, modes });
+    apps.push({ id, dir: app.dir, status: s.status, elapsedMs: Date.now() - s.phaseAt, mode: s.mode, startedAt: s.startedAt,
+      error: s.error, account: readAccount(id), progress: s.progress, installed: installed(id),
+      dataDir: path.join(root, app.dir, 'data'), lastSeq: s.seq, modes });
   }
-  return { node: process.versions.node, platform: process.platform, root, apps };
+  return { node: process.versions.node, platform: process.platform, root, launcherUrl: `http://${HOST}:${PORT}/`, apps };
 }
 
 // ── HTTP ─────────────────────────────

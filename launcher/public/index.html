@@ -11,13 +11,17 @@
   <script type="module" src="app.js"></script>
 </head>
 <body>
+  <a class="skip" href="#apps">프로그램 목록으로 건너뛰기</a>
   <header class="top">
     <div class="wrap top-inner">
       <a class="brand" href="./">
         <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 14a7 7 0 0 1 14 0v4H5z"/><path d="M9 18v2m6-2v2"/></svg></span>
         <span><strong>센서 3D 이력관리</strong><small>실행 관리</small></span>
       </a>
-      <span id="conn" class="conn" role="status" aria-live="polite">연결 확인 중…</span>
+      <div class="top-right">
+        <span id="conn" class="conn" role="status">연결 확인 중…</span>
+        <a id="switch-link" class="btn small ghost" hidden></a>
+      </div>
     </div>
   </header>
 
@@ -25,30 +29,72 @@
     <section class="hero">
       <h1>로봇 센서 파손 이력, 두 가지 구현</h1>
       <p id="hero-text" class="lead">같은 기획안으로 만든 두 프로그램입니다. 라이다 2개·카메라 2개를 3D로 보고, 파손을 신고·승인·이력으로 관리합니다.</p>
+      <div id="hero-actions" class="hero-actions"></div>
+      <div id="lost-banner" class="banner" role="alert" hidden>
+        <b>런처가 꺼졌습니다.</b> 실행 중이던 프로그램도 함께 꺼졌을 수 있습니다. START.cmd(또는 <code>npm start</code>)를 다시 실행하면 이 화면이 자동으로 다시 연결됩니다.
+      </div>
     </section>
 
-    <section id="apps" class="apps" aria-label="프로그램 목록"></section>
+    <section id="apps" class="apps" aria-label="프로그램 목록" tabindex="-1"></section>
 
-    <section id="howto" class="panel howto">
-      <h2>내 PC에서 실행하기</h2>
-      <p class="muted">이 홈페이지를 내 PC에서 띄우면 버튼으로 두 프로그램을 실행·중지할 수 있습니다. 처음 실행할 때 필요한 패키지를 자동으로 설치합니다(인터넷 필요).</p>
+    <section id="howto" class="panel howto" aria-labelledby="howto-title">
+      <div class="panel-head">
+        <h2 id="howto-title">내 PC에서 실행하기</h2>
+        <div class="tabs" role="tablist" aria-label="운영체제">
+          <button type="button" role="tab" id="tab-win" aria-controls="os-win" aria-selected="true">Windows</button>
+          <button type="button" role="tab" id="tab-unix" aria-controls="os-unix" aria-selected="false" tabindex="-1">macOS · Linux</button>
+        </div>
+      </div>
+      <p class="muted">따로 설치할 프로그램 없이 폴더 하나로 실행됩니다. 처음 실행할 때 필요한 패키지를 자동으로 받습니다(인터넷 필요).</p>
       <ol class="steps">
-        <li><b>Node.js 24 이상</b>을 설치합니다. (damage만 쓸 때는 22.13 이상)</li>
-        <li>코드를 받습니다.
-          <pre class="code"><code id="clone-cmd">git clone https://github.com/hljihun98/robot-sensor-3d.git
-cd robot-sensor-3d</code></pre>
+        <li>
+          <h3>Node.js 설치</h3>
+          <p><b>Node.js 24 이상</b>(LTS)을 설치합니다. damage만 쓸 때는 22.13 이상이면 됩니다.</p>
+          <a class="btn small" href="https://nodejs.org/ko/download" target="_blank" rel="noopener">Node.js 내려받기</a>
         </li>
-        <li>Windows는 <b>START.cmd</b>를 더블클릭, 그 밖에는 터미널에서 <code>npm start</code>.</li>
-        <li>브라우저에서 <code>http://127.0.0.1:8080</code> 이 열리면 원하는 프로그램의 <b>실행</b>을 누릅니다.</li>
+        <li>
+          <h3>코드 받기</h3>
+          <div class="choice">
+            <div class="choice-item">
+              <b>방법 1 · ZIP 파일</b>
+              <p class="small muted">내려받아 원하는 곳에 압축을 풉니다. <code>robot-sensor-3d-main</code> 폴더가 생깁니다.</p>
+              <a class="btn small primary" href="https://github.com/hljihun98/robot-sensor-3d/archive/refs/heads/main.zip">ZIP 내려받기</a>
+            </div>
+            <div class="choice-item">
+              <b>방법 2 · Git</b>
+              <div class="code-box"><pre><code>git clone https://github.com/hljihun98/robot-sensor-3d.git
+cd robot-sensor-3d</code></pre><button type="button" class="copy" data-copy="git clone https://github.com/hljihun98/robot-sensor-3d.git&#10;cd robot-sensor-3d" aria-label="Git 명령 복사">복사</button></div>
+            </div>
+          </div>
+        </li>
+        <li>
+          <h3>런처 실행</h3>
+          <div role="tabpanel" id="os-win" aria-labelledby="tab-win">
+            <p>폴더 안의 <b>START.cmd</b>를 더블클릭합니다. 검은 창이 뜨고 브라우저가 자동으로 열립니다. 이 창을 닫으면 모든 프로그램이 꺼집니다.</p>
+            <p class="small muted">보안 경고 창이 뜨면 <b>실행</b>(또는 <b>추가 정보 → 실행</b>)을 누르세요.</p>
+          </div>
+          <div role="tabpanel" id="os-unix" aria-labelledby="tab-unix" hidden>
+            <p>터미널에서 폴더로 이동해 실행합니다. 브라우저가 자동으로 열립니다.</p>
+            <div class="code-box"><pre><code>./start.sh</code></pre><button type="button" class="copy" data-copy="./start.sh" aria-label="실행 명령 복사">복사</button></div>
+            <p class="small muted">또는 <code>npm start</code></p>
+          </div>
+        </li>
+        <li>
+          <h3>프로그램 실행</h3>
+          <p>이 홈페이지가 <code>http://127.0.0.1:8080</code> 주소로 열리면, 쓰고 싶은 프로그램의 <b>실행</b>을 누르고 준비되면 <b>열기</b>를 누릅니다.</p>
+          <a class="btn small" href="http://127.0.0.1:8080/">런처 열기</a>
+          <span class="small muted">런처를 켠 뒤에 누르세요.</span>
+        </li>
       </ol>
     </section>
 
-    <section class="panel">
-      <h2>두 프로그램 비교</h2>
+    <section class="panel" aria-labelledby="compare-title">
+      <h2 id="compare-title">두 프로그램 비교</h2>
       <div class="table-wrap">
         <table class="compare">
           <thead><tr><th scope="col">항목</th><th scope="col">센서 파손 3D 이력관리<br><small>robot-sensor-damage</small></th><th scope="col">센서로그<br><small>robot-sensor-platform</small></th></tr></thead>
           <tbody>
+            <tr><th scope="row">추천 용도</th><td>화면·흐름 확인, 데모 공유, 3D 위치 확인이 중요할 때</td><td>사진 공개 권한·보안이 중요한 시범 운영</td></tr>
             <tr><th scope="row">구조</th><td>업무 로직 하나를 브라우저·서버가 함께 씀</td><td>로직은 서버에, 화면은 파일 하나</td></tr>
             <tr><th scope="row">서버 없이</th><td>데모 모드로 동작 (브라우저에 저장)</td><td>서버 필요</td></tr>
             <tr><th scope="row">3D</th><td>곡면에 붙인 표시, 360° 펼쳐보기</td><td>점·선·원·영역 표시, GLB 모델 교체 화면</td></tr>
@@ -60,11 +106,42 @@ cd robot-sensor-3d</code></pre>
         </table>
       </div>
     </section>
+
+    <section class="panel faq" aria-labelledby="faq-title">
+      <h2 id="faq-title">자주 묻는 질문</h2>
+      <details>
+        <summary>실행을 눌렀는데 오래 걸려요.</summary>
+        <p>처음 실행할 때만 필요한 패키지를 인터넷에서 받습니다. 카드에 진행률이 나오며 인터넷 속도에 따라 몇 분 걸릴 수 있습니다. 두 번째부터는 몇 초 안에 켜집니다.</p>
+      </details>
+      <details>
+        <summary>"포트를 다른 프로그램이 쓰고 있습니다"라고 나와요.</summary>
+        <p>같은 프로그램이 다른 창에서 이미 켜져 있는 경우가 많습니다. 카드의 <b>열기</b>로 그대로 쓰거나, 그 창을 닫은 뒤 다시 <b>실행</b>을 누르세요.</p>
+      </details>
+      <details>
+        <summary>첫 로그인 비밀번호를 모르겠어요.</summary>
+        <p><b>센서로그</b>는 카드에 계정이 나오며, <code>robot-sensor-platform/data/initial-account.txt</code>에도 있습니다.</p>
+        <p><b>센서 파손 3D 이력관리(서버 모드)</b>는 처음 실행할 때 한 번만 카드에 나옵니다. 놓쳤다면 런처를 끄고 <code>robot-sensor-damage</code> 폴더에서 <code>npm run seed -- --reset</code>을 실행하세요. 기존 데이터는 백업 파일로 옮겨지고, 새 임시 비밀번호가 터미널에 나옵니다.</p>
+      </details>
+      <details>
+        <summary>휴대폰이나 다른 PC에서 접속하고 싶어요.</summary>
+        <p>런처는 보안을 위해 이 PC 안에서만 열립니다. 여러 사람이 쓰려면 서버에 올리고 HTTPS를 설정해야 합니다. 각 폴더 README의 서버 운영 방법을 보세요.</p>
+      </details>
+      <details>
+        <summary>데모 데이터를 처음 상태로 되돌리고 싶어요.</summary>
+        <p>데모 화면 맨 위의 <b>데모 초기화</b>를 누르세요. 데이터는 그 브라우저에만 있어서 다른 사람에게는 영향이 없습니다.</p>
+      </details>
+      <details>
+        <summary>"Node.js 24 이상이 필요합니다"라고 나와요.</summary>
+        <p>nodejs.org에서 LTS 버전을 설치한 뒤 런처 창을 닫고 다시 실행하세요. damage의 데모 모드는 낮은 버전에서도 실행됩니다.</p>
+      </details>
+    </section>
   </main>
 
   <footer class="wrap foot">
     <span>각 프로그램의 자세한 설명은 폴더의 README를 보세요.</span>
-    <a id="repo-link" href="https://github.com/hljihun98/robot-sensor-3d">GitHub 저장소</a>
+    <a href="https://github.com/hljihun98/robot-sensor-3d">GitHub 저장소</a>
   </footer>
+
+  <div id="toasts" class="toasts" role="status" aria-live="polite"></div>
 </body>
 </html>
